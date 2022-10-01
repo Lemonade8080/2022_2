@@ -1,5 +1,3 @@
-# 2018253061_현동윤
-
 import math
 import sys
 import numpy as np
