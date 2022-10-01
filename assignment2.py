@@ -14,30 +14,26 @@ cluster_list = np.zeros(DATA_COUNT)           # 군집 [ 500 개의 데이터의
 dataset = []
 
 
-def main():
-    read_file()
+def main(args):
+    read_file(args)
     assignment2()
     write_file()
 
 
-def assignment2():
+def assignment2():  # cluster 구하기 -> center 구하기 -> 중심값 변화 구하기
+
     move = True
     init_center()
 
     while move:
-        move = clustering()
+        old_center_list = deepcopy(center_list)
+        clustering()
+        move = calc_distance(old_center_list, center_list).any()
 
 
-def clustering():  # cluster 구하기 -> center 구하기 -> 중심값 변화 구하기
-
+def clustering():
     update_clusters()
-    old_center_list = deepcopy(center_list)
     update_centers()
-
-    if calc_distance(old_center_list, center_list).any() == 0:
-        return False
-    else:
-        return True
 
 
 def init_center():
@@ -66,8 +62,8 @@ def calc_distance(data, center):  # data 와 center 간의 거리 구하기
     return np.round(sum([(data - center) ** 2 for data, center in list(zip(data, center))]), 3)
 
 
-def read_file():
-    file = open('data.txt', 'r')
+def read_file(args):
+    file = open(args, 'r')
     for line in file:
         dataset.append(list(map(float, line.replace('\n', '').split('\t'))))
     file.close()
@@ -94,4 +90,4 @@ def result():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1])
