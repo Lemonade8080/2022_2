@@ -1,4 +1,3 @@
-# 2018253061_현동윤
 import numpy as np
 import time
 import sys
@@ -58,8 +57,8 @@ def update_clusters(medoid):
     cluster = np.zeros(DATA_COUNT)
 
     for data_idx in range(DATA_COUNT):
-        distance_in_cluster = [calc_distance(dataset[data_idx], dataset[medoid[idx]]) for idx in range(K)]
-        cluster[data_idx] = np.argmin(distance_in_cluster)
+        distances = [calc_distance(dataset[data_idx], dataset[medoid[idx]]) for idx in range(K)]
+        cluster[data_idx] = np.argmin(distances)
     return cluster
 
 
