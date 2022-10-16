@@ -3,7 +3,7 @@ import numpy as np
 import time
 import sys
 
-DATA_COUNT = 500  # GENE 개수
+DATA_COUNT = 10  # GENE 개수
 dataset = []
 cluster = [i for i in range(DATA_COUNT)]
 
@@ -57,6 +57,7 @@ def clustering2():
         for j in range(i + 1, DATA_COUNT):
             distance_data.append([calc_distance(i, j), i, j])
 
+    print(distance_data)
     count = 0
 
     while True:
@@ -104,12 +105,12 @@ def update(data, min_pos):
     if data[1] == min_pos[1]:
         if calc_distance(data[2], min_pos[0]) > data[0]:
             data[0] = calc_distance(data[1], min_pos[0])
-            # print('Change Data:', data)
+            print('Change Data:', data)
 
     elif data[2] == min_pos[1]:
         if calc_distance(data[1], min_pos[0]) > data[0]:
             data[0] = calc_distance(data[1], min_pos[0])
-            # print('Change Data:', data)
+            print('Change Data:', data)
     return data
 
 
