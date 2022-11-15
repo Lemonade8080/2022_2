@@ -1,4 +1,3 @@
-# 2018253061_현동윤
 import numpy as np
 import time
 import sys
