@@ -1,3 +1,4 @@
+# 2018253061_현동윤
 import numpy as np
 import time
 import sys
@@ -12,11 +13,46 @@ init_edge = []
 
 
 def assignment6():
-    edge_list = init_edges()
-    main(edge_list)
+    edge_list = init_edges()  # 1개의 complete graph를 구함.
+    recursion(edge_list)      # top-down
+
+# ------------ get init graph  ----------------- #
 
 
-def main(edge_list):
+def init_edges():
+    graph = init_graph()
+    edge_list = sorted(get_edge_list(graph, init_edge))
+    return edge_list
+
+
+def init_graph():
+    main_graph = []  # init graph
+    visit = []  # 참조한 vertex 들
+    for key in init_dict.keys():
+        if key not in visit:
+            sub_graph = get_sub_graph(key, init_edge)
+            edge = get_edge_list(sub_graph, init_edge)
+
+            if is_density(sub_graph, edge):
+                cluster_list.append(sub_graph)
+            else:
+                main_graph = sub_graph
+
+            for sub in sub_graph:
+                visit.append(sub)
+
+    # density 0.4 미만인 complete graph가 1개 이기 때문에 main_graph = sub_graph 한뒤 반환
+    return main_graph
+
+
+def get_edge_list(graph, prev_list):
+    edge_list = [e for e in prev_list if e[0] in graph and e[1] in graph]
+    return edge_list
+
+# ------------ main recursion  ----------------- #
+
+
+def recursion(edge_list):
     rmv_list = get_remove_edge_list(edge_list)
 
     while True:
@@ -24,81 +60,15 @@ def main(edge_list):
         del rmv_list[0]
         edge_list.remove(rmv_edge)
 
-        if not is_connected(rmv_edge[0], rmv_edge[1], edge_list):
+        if not is_connected(rmv_edge, edge_list):
             sub1 = get_sub_graph(rmv_edge[0], edge_list)
             sub2 = get_sub_graph(rmv_edge[1], edge_list)
             break
 
-    recursion(sub1, edge_list)
-    recursion(sub2, edge_list)
+    add_cluster(sub1, edge_list)
+    add_cluster(sub2, edge_list)
 
-
-def recursion(graph, edge_list):
-    prev_list = copy.deepcopy(edge_list)
-    edge_list = get_edge_list(graph, prev_list)
-    if is_density(graph, edge_list):
-        print('{0}: add {1}'.format(len(graph), graph))
-        cluster_list.append(graph)
-    else:
-        print('{0}: div {1}'.format(len(graph), graph))
-        main(edge_list)
-
-
-def is_density(graph, edge_list):
-    return calc_density(graph, edge_list) >= THRESHOLD
-
-
-def calc_density(graph, edge_list):
-    vertex_cnt = len(graph)
-    edge_cnt = len(edge_list)
-
-    if vertex_cnt == 1:
-        return 1
-    else:
-        return 2 * edge_cnt / (vertex_cnt * (vertex_cnt - 1))
-
-
-def is_connected(start, end, edge_list):
-    graph = get_dict(edge_list)
-    visit = []
-    try:
-        return dfs_connect(graph, start, end, visit)
-
-    except KeyError:
-        return False
-
-
-def dfs_connect(graph, start, end, visit):
-    visit.append(start)
-
-    if start == end:
-        return True
-
-    for vertex in graph[start]:
-        if vertex not in visit:
-            if dfs_connect(graph, vertex, end, visit):
-                return True
-    return False
-
-
-def get_sub_graph(start, edge_list):
-    edge_dict = get_dict(edge_list)
-    sub_graph = []
-    try:
-        return DFS(edge_dict, start, sub_graph)
-
-    except KeyError:
-        return sub_graph
-
-
-def DFS(graph, start, visit):
-    visit.append(start)
-
-    for vertex in graph[start]:
-        if vertex not in visit:
-            DFS(graph, vertex, visit)
-
-    return visit
+# ------------ remove list  ----------------- #
 
 
 def get_remove_edge_list(edge_list):
@@ -136,35 +106,85 @@ def get_dict(edge_list):
 
     return new_dict
 
-
-def init_edges():
-    graph = init_graph()
-    edge_list = sorted(get_edge_list(graph, init_edge))
-    return edge_list
+# ------------ check connection -------------- #
 
 
-def init_graph():
-    graph = []  # init graph
-    visit = []  # 참조한 vertex 들
-    for key in init_dict.keys():
-        if key not in visit:
-            sub_graph = get_sub_graph(key, init_edge)
-            edge = get_edge_list(sub_graph, init_edge)
+def is_connected(edge, edge_list):
+    start = edge[0]
+    end = edge[1]
+    graph = get_dict(edge_list)
+    visit = []
+    try:
+        return dfs_connect(graph, start, end, visit)
 
-            if is_density(sub_graph, edge):
-                cluster_list.append(sub_graph)
-            else:
-                graph.append(sub_graph)
-
-            for sub in sub_graph:
-                visit.append(sub)
-
-    return graph[0]  # 이번 경우, complete graph가 1개 이기 때문에 graph[0] 반환
+    except KeyError:
+        return False
 
 
-def get_edge_list(graph, prev_list):
-    edge_list = [e for e in prev_list if e[0] in graph and e[1] in graph]
-    return edge_list
+def dfs_connect(graph, start, end, visit):
+    visit.append(start)
+
+    if start == end:
+        return True
+
+    for vertex in graph[start]:
+        if vertex not in visit:
+            if dfs_connect(graph, vertex, end, visit):
+                return True
+    return False
+
+# ------------ get sub graph ----------------- #
+
+
+def get_sub_graph(start, edge_list):
+    edge_dict = get_dict(edge_list)
+    sub_graph = []
+    try:
+        return DFS(edge_dict, start, sub_graph)
+
+    except KeyError:
+        return sub_graph
+
+
+def DFS(graph, start, visit):
+    visit.append(start)
+
+    for vertex in graph[start]:
+        if vertex not in visit:
+            DFS(graph, vertex, visit)
+
+    return visit
+
+
+# ---------- add or div cluster ------------- #
+
+def add_cluster(graph, edge_list):
+    prev_list = copy.deepcopy(edge_list)
+    now_list = get_edge_list(graph, prev_list)
+    if is_density(graph, now_list):
+        # print('{0}: add {1}'.format(len(graph), graph))
+        cluster_list.append(graph)
+    else:
+        # print('{0}: div {1}'.format(len(graph), graph))
+        recursion(now_list)
+
+# ----------- check density ----------------- #
+
+
+def is_density(graph, edge_list):
+    return calc_density(graph, edge_list) >= THRESHOLD
+
+
+def calc_density(graph, edge_list):
+    vertex_cnt = len(graph)
+    edge_cnt = len(edge_list)
+
+    if vertex_cnt == 1:
+        return 1
+    else:
+        return 2 * edge_cnt / (vertex_cnt * (vertex_cnt - 1))
+
+# -------------------------------------------- #
 
 
 def read_file(argv):
@@ -184,12 +204,6 @@ def read_file(argv):
     file.close()
 
 
-def write_file():
-    with open("assignment6_output.txt", "w") as file:
-        file.write(get_result())
-    file.close()
-
-
 def get_result():
     result = ""
     for c in cluster_list:
@@ -199,7 +213,14 @@ def get_result():
     return result
 
 
+def write_file():
+    with open("assignment6_output.txt", "w") as file:
+        file.write(get_result())
+    file.close()
+
+
 if __name__ == '__main__':
-    read_file(sys.argv[1])
+    # read_file(sys.argv[1])
+    read_file("data.txt")
     assignment6()
     write_file()
